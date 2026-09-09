@@ -1,4 +1,4 @@
-// biome-ignore-all lint/plugin/no-physical-direction-utility: pre-rule backlog — physical margin/padding/inset utilities predate the rule; drain by swapping ml/mr → ms/me, pl/pr → ps/pe, left/right → start/end, then deleting this line. See https://github.com/inkeep/open-knowledge/blob/main/biome-plugins/README.md#no-physical-direction-utilitygrit
+// oxlint-disable ok/no-physical-direction-utility -- pre-rule backlog — physical margin/padding/inset utilities predate the rule; drain by swapping ml/mr → ms/me, pl/pr → ps/pe, left/right → start/end, then deleting this line. See https://github.com/inkeep/open-knowledge/blob/main/lint-plugins/ok-rules/README.md#no-physical-direction-utility
 
 import type {
   OkBugReportCrashDetectedEvent,
@@ -7,6 +7,7 @@ import type {
 } from '@inkeep/open-knowledge-core';
 import {
   BUG_REPORT_SCREENSHOT_ZIP_ENTRY,
+  formatRelativeAge,
   isBugReportAttachmentEntry,
 } from '@inkeep/open-knowledge-core';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
@@ -107,6 +108,9 @@ function crashInviteLines(invite: OkBugReportCrashDetectedEvent): string[] {
   const lines = [`Crash source: ${source}`, `Crash event: ${invite.eventId}`];
   if (invite.kind === 'boot' && invite.crashedAppVersion !== undefined) {
     lines.push(`Crashed app version: ${invite.crashedAppVersion}`);
+  }
+  if (invite.kind === 'boot' && invite.crashedAt !== undefined) {
+    lines.push(`Crashed at: ${invite.crashedAt} (${formatRelativeAge(invite.crashedAt)})`);
   }
   return lines;
 }
@@ -445,7 +449,13 @@ function ReportBugDialog({
                       {isMacOS && (
                         <Trans>
                           It also adds the crash reports macOS recorded for OpenKnowledge and its
-                          helper processes, only ours and never another app's.
+                          helper processes, never another app's report, though ours do name the
+                          processes they were running alongside. Each one carries machine details
+                          macOS puts in every report: your account uid, the Mac model, and the name
+                          of the process that launched the app. On a managed machine, that launching
+                          process can be internal tooling. The identifiers that would link the bug
+                          reports you file to each other are replaced first, so a collected report
+                          is not byte-identical to the one macOS wrote.
                         </Trans>
                       )}
                     </p>

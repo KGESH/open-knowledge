@@ -4,6 +4,7 @@
     "test-support/fixtures/share-url-v1-v2.json",
     "test-support/fixtures/codex-legacy-warning-envelopes.json",
     "pnpm-workspace.yaml",
+    "tsconfig.json",
     "patches/*.patch"
   ],
   "tasks": {
@@ -39,6 +40,14 @@
     "typecheck": {
       "dependsOn": ["^build"]
     },
+    "@inkeep/open-knowledge#check:dts": {
+      "dependsOn": ["build"],
+      "inputs": [
+        "tsconfig.check.json",
+        "scripts/check-published-dts.mjs",
+        "$TURBO_ROOT$/scripts/read-jsonc.mjs"
+      ]
+    },
     "@inkeep/open-knowledge-docs#build": {
       "dependsOn": ["^build", "typecheck"],
       "outputs": ["dist/**", ".next/**"],
@@ -73,7 +82,9 @@
         "tests/lingui-macro-shim.tsx",
         "tests/integration/idb-preload.ts",
         "../../test-support/*.ts",
-        "../test-support/*.ts"
+        "../test-support/*.ts",
+        "../../oxlint.config.ts",
+        "../../lint-plugins/**"
       ]
     },
     "@inkeep/open-knowledge-docs#test": {
@@ -92,7 +103,6 @@
         "tsconfig.json",
         "vitest.config.ts",
         "vitest.*.config.mts",
-        "../../test-support/*.ts",
         "../test-support/*.ts"
       ]
     },
@@ -104,6 +114,8 @@
         "src/**/*.tsx",
         "src/**/*.json",
         "tests/contract/**/*.ts",
+        "scripts/**/*.ts",
+        "scripts/**/*.mjs",
         "vitest.config.ts",
         "../../test-support/*.ts"
       ]
@@ -116,7 +128,8 @@
         "!CHANGELOG.md",
         "!README.md",
         "../../biome.jsonc",
-        "../../biome-plugins/**",
+        "../../oxlint.config.ts",
+        "../../lint-plugins/**",
         "../../test-support/**",
         "../../.github/scripts/smoke-packaged-dmg.mjs",
         "../../scripts/verify-native-config-in-packaged-dmg.mjs",
@@ -137,7 +150,28 @@
         "corpora/**/*.json",
         "vitest.config.ts",
         "../../test-support/*.ts",
-        "../server/src/**/*.ts"
+        "../server/src/**/*.ts",
+        "../../oxlint.config.ts",
+        "../../lint-plugins/**"
+      ]
+    },
+    "@inkeep/open-knowledge-core#test": {
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "src/**/*.json",
+        "src/**/*.css",
+        "tests/contract/**/*.ts",
+        "scripts/**/*.mjs",
+        "scripts/**/*.test.ts",
+        "package.json",
+        "vitest.config.ts",
+        "vite.dedupe.ts",
+        "tests/lingui-macro-shim.tsx",
+        "tests/integration/idb-preload.ts",
+        "../../test-support/**"
       ]
     },
     "test:dom": {
@@ -177,12 +211,19 @@
         "playwright.config.ts",
         "vitest.integration.config.ts",
         "vitest.config.ts",
+        "vite.config.ts",
         "vite.dedupe.ts",
-        "../../test-support/*.ts",
+        "vite.react-babel.ts",
+        "../../pnpm-lock.yaml",
+        "../../test-support/**",
         "../server/src/**/*.ts",
         "../core/src/**/*.ts",
+        "../desktop/tests/**/*.{ts,tsx}",
+        "../md-conformance/src/**/*.{ts,tsx,mjs,json,md}",
+        "tests/lint-plugins/**/*.{mjs,json,md}",
+        "src/lint-plugins/**/*.{mjs,json,md}",
+        "../server/src/lint-plugins/**/*.{tsx,mjs,json,md}",
         "../../biome.jsonc",
-        "../../biome-plugins/**",
         "../../lint-plugins/**",
         "../../oxlint.config.ts"
       ]
@@ -200,12 +241,19 @@
         "playwright.config.ts",
         "vitest.integration.config.ts",
         "vitest.config.ts",
+        "vite.config.ts",
         "vite.dedupe.ts",
-        "../../test-support/*.ts",
+        "vite.react-babel.ts",
+        "../../pnpm-lock.yaml",
+        "../../test-support/**",
         "../server/src/**/*.ts",
         "../core/src/**/*.ts",
+        "../desktop/tests/**/*.{ts,tsx}",
+        "../md-conformance/src/**/*.{ts,tsx,mjs,json,md}",
+        "tests/lint-plugins/**/*.{mjs,json,md}",
+        "src/lint-plugins/**/*.{mjs,json,md}",
+        "../server/src/lint-plugins/**/*.{tsx,mjs,json,md}",
         "../../biome.jsonc",
-        "../../biome-plugins/**",
         "../../lint-plugins/**",
         "../../oxlint.config.ts"
       ]
@@ -223,12 +271,19 @@
         "playwright.config.ts",
         "vitest.integration.config.ts",
         "vitest.config.ts",
+        "vite.config.ts",
         "vite.dedupe.ts",
-        "../../test-support/*.ts",
+        "vite.react-babel.ts",
+        "../../pnpm-lock.yaml",
+        "../../test-support/**",
         "../server/src/**/*.ts",
         "../core/src/**/*.ts",
+        "../desktop/tests/**/*.{ts,tsx}",
+        "../md-conformance/src/**/*.{ts,tsx,mjs,json,md}",
+        "tests/lint-plugins/**/*.{mjs,json,md}",
+        "src/lint-plugins/**/*.{mjs,json,md}",
+        "../server/src/lint-plugins/**/*.{tsx,mjs,json,md}",
         "../../biome.jsonc",
-        "../../biome-plugins/**",
         "../../lint-plugins/**",
         "../../oxlint.config.ts"
       ]
@@ -246,12 +301,19 @@
         "playwright.config.ts",
         "vitest.integration.config.ts",
         "vitest.config.ts",
+        "vite.config.ts",
         "vite.dedupe.ts",
-        "../../test-support/*.ts",
+        "vite.react-babel.ts",
+        "../../pnpm-lock.yaml",
+        "../../test-support/**",
         "../server/src/**/*.ts",
         "../core/src/**/*.ts",
+        "../desktop/tests/**/*.{ts,tsx}",
+        "../md-conformance/src/**/*.{ts,tsx,mjs,json,md}",
+        "tests/lint-plugins/**/*.{mjs,json,md}",
+        "src/lint-plugins/**/*.{mjs,json,md}",
+        "../server/src/lint-plugins/**/*.{tsx,mjs,json,md}",
         "../../biome.jsonc",
-        "../../biome-plugins/**",
         "../../lint-plugins/**",
         "../../oxlint.config.ts"
       ]
@@ -273,7 +335,7 @@
       ]
     },
     "test:e2e": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "build"],
       "cache": false
     },
     "test:visual": {

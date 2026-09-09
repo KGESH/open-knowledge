@@ -60,6 +60,7 @@ import { AcpPermissionStore } from './acp/permissions.ts';
 import { AcpRegistry, loadCustomAgents } from './acp/registry.ts';
 import { AgentFocusBroadcaster } from './agent-focus.ts';
 import { AgentPresenceBroadcaster } from './agent-presence.ts';
+import type { AgentRegistryHostSeam } from './agent-registry-apply.ts';
 import { AgentSessionManager } from './agent-sessions.ts';
 import { type CommentDocHooks, createApiExtension, isSafeDocName } from './api-extension.ts';
 import { assetReferencesChanged } from './asset-references.ts';
@@ -299,6 +300,7 @@ export interface ServerOptions {
   configHomedirOverride?: string;
   mdManager?: MarkdownManager;
   detectGh?: DetectGhFn;
+  agentIntegrations?: AgentRegistryHostSeam;
   detectGhAccounts?: DetectGhAccountsFn;
   tokenStore?: ProbeTokenStore | null;
   checkPushPermissionFn?: (opts: CheckPushPermissionOptions) => Promise<PushPermission>;
@@ -356,6 +358,8 @@ export interface ServerInstance {
   readonly acpRegistry: AcpRegistry;
   readonly acpPermissions: AcpPermissionStore;
 }
+
+export const SHADOW_FANOUT_WARMUP_MS = 3000;
 
 const PARK_SNAPSHOT_ORIGIN = (() => {
   const ctx = Object.freeze({ origin: 'park-snapshot', paired: true as const });
@@ -768,6 +772,7 @@ export function createServer(options: ServerOptions): ServerInstance {
   let bridgeLossReporter: BridgeDeriveLossReporter | undefined;
   let cc1Broadcaster: CC1Broadcaster | null = null;
   let inPlaceRescanTimer: ReturnType<typeof setTimeout> | null = null;
+  let shadowWarmupTimer: ReturnType<typeof setTimeout> | null = null;
   const IN_PLACE_RESCAN_DEBOUNCE_MS = 500;
   let agentFocusBroadcaster: AgentFocusBroadcaster | null = null;
   let agentPresenceBroadcaster: AgentPresenceBroadcaster | null = null;
@@ -1926,6 +1931,7 @@ export function createServer(options: ServerOptions): ServerInstance {
       resolveEmbed,
       getBridgeLossReporter: () => bridgeLossReporter,
       getPrincipal: () => loadedPrincipal,
+      agentIntegrations: options.agentIntegrations,
       acpRegistry,
       loadAcpCustomAgents: () => loadCustomAgents(lockDir, getLogger('acp-registry')),
       homeDirOverride: configHomedirOverride,
@@ -2075,6 +2081,7 @@ export function createServer(options: ServerOptions): ServerInstance {
       const source = document.getText('source').toString();
       if (!source.includes(needle)) continue;
       try {
+        // (precedent #24). Re-render uses the same FILE_WATCHER
         document.transact(() => {
           applyDiskContentToDoc(document, source, resolveEmbed, docName);
         }, FILE_WATCHER_ORIGIN);
@@ -2688,6 +2695,10 @@ export function createServer(options: ServerOptions): ServerInstance {
               clearTimeout(inPlaceRescanTimer);
               inPlaceRescanTimer = null;
             }
+            if (shadowWarmupTimer) {
+              clearTimeout(shadowWarmupTimer);
+              shadowWarmupTimer = null;
+            }
             if (headWatcher) {
               await headWatcher.unsubscribe();
               headWatcher = null;
@@ -2956,14 +2967,16 @@ export function createServer(options: ServerOptions): ServerInstance {
       }
     }
 
-    if (shadowRef.current) {
+    if (shadowRef.current && inflightDestroy === null) {
       const warmShadow = shadowRef.current;
       const warmContentRoot = toPosix(relative(projectDir, contentDir)) || '.';
-      setTimeout(() => {
+      shadowWarmupTimer = setTimeout(() => {
+        shadowWarmupTimer = null;
         void buildWipTree(warmShadow, warmContentRoot).catch((e) => {
           log.debug({ err: e }, '[shadow] fan-out index warm-up failed (non-fatal)');
         });
-      }, 3000).unref();
+      }, SHADOW_FANOUT_WARMUP_MS);
+      shadowWarmupTimer.unref?.();
     }
 
     if (shadowRef.current) {

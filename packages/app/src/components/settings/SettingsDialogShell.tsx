@@ -1,6 +1,6 @@
-// biome-ignore-all lint/plugin/no-raw-html-interactive-element: pre-rule backlog — file uses raw <button> awaiting shadcn Button migration; tracked at https://github.com/inkeep/open-knowledge/blob/main/biome-plugins/README.md#no-raw-html-interactive-elementgrit
+// oxlint-disable ok/no-raw-html-interactive-element -- pre-rule backlog — file uses raw <button> awaiting shadcn Button migration; tracked at https://github.com/inkeep/open-knowledge/blob/main/lint-plugins/ok-rules/README.md#no-raw-html-interactive-element
 
-// biome-ignore-all lint/plugin/no-physical-direction-utility: pre-rule backlog — physical margin/padding/inset utilities predate the rule; drain by swapping ml/mr → ms/me, pl/pr → ps/pe, left/right → start/end, then deleting this line. See https://github.com/inkeep/open-knowledge/blob/main/biome-plugins/README.md#no-physical-direction-utilitygrit
+// oxlint-disable ok/no-physical-direction-utility -- pre-rule backlog — physical margin/padding/inset utilities predate the rule; drain by swapping ml/mr → ms/me, pl/pr → ps/pe, left/right → start/end, then deleting this line. See https://github.com/inkeep/open-knowledge/blob/main/lint-plugins/ok-rules/README.md#no-physical-direction-utility
 
 import { SHOW_INSTALL_SKILL } from '@inkeep/open-knowledge-core';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
@@ -39,6 +39,9 @@ function releaseNotesUrl(version: string): string {
 }
 
 const LEGACY_SECTION_ALIASES: Record<string, { sectionId: string; anchor: string }> = {
+  'ai-tools': { sectionId: 'agent-connections', anchor: 'section:agent-connections' },
+  'project-ai-tools': { sectionId: 'agent-connections', anchor: 'section:agent-connections' },
+  'configure-agents': { sectionId: 'agent-connections', anchor: 'section:agent-connections' },
   'content-rules': { sectionId: 'project-preferences', anchor: 'section:content-rules' },
   terminal: { sectionId: 'project-preferences', anchor: 'section:terminal' },
   sharing: { sectionId: 'sync', anchor: 'section:sharing' },
@@ -149,17 +152,27 @@ export function SettingsDialogShell({
 
   const groups: SidebarGroup[] = [
     {
+      id: 'agents',
+      label: t`Agents`,
+      enabled: true,
+      items: [
+        {
+          id: 'agent-connections',
+          label: t`Agent connections`,
+          keywords: [t`AI tools`, t`Configure agents`],
+        },
+      ],
+    },
+    {
       id: 'user',
       label: t`User`,
       enabled: true,
       items: [
         { id: 'preferences', label: t`Preferences` },
-        { id: 'configure-agents', label: t`Configure agents` },
         { id: 'hotkeys', label: t`Hotkeys` },
         { id: 'account', label: t`Account` },
         { id: 'user-plugins-manage', label: t`Plugins` },
         { id: 'user-skills', label: t`Skills Studio` },
-        ...(isOkDesktopHost ? [{ id: 'ai-tools', label: t`AI tools & CLI` }] : []),
       ],
     },
     {
@@ -207,7 +220,6 @@ export function SettingsDialogShell({
         },
         { id: 'plugins-manage', label: t`Plugins` },
         ...(isFileProtocolRenderer ? [] : [{ id: 'link-previews', label: t`Link previews` }]),
-        ...(isOkDesktopHost ? [{ id: 'project-ai-tools', label: t`AI tools` }] : []),
         ...(isOkDesktopHost ? [{ id: 'network-access', label: t`Remote control` }] : []),
         { id: 'project-templates', label: t`Templates` },
         { id: 'skills', label: t`Skills Studio` },

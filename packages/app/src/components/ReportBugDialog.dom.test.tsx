@@ -294,7 +294,7 @@ describe('ReportBugDialog', () => {
     ).not.toBeNull();
     expect(
       screen.getByText(
-        "It also adds the crash reports macOS recorded for OpenKnowledge and its helper processes, only ours and never another app's.",
+        "It also adds the crash reports macOS recorded for OpenKnowledge and its helper processes, never another app's report, though ours do name the processes they were running alongside. Each one carries machine details macOS puts in every report: your account uid, the Mac model, and the name of the process that launched the app. On a managed machine, that launching process can be internal tooling. The identifiers that would link the bug reports you file to each other are replaced first, so a collected report is not byte-identical to the one macOS wrote.",
         { exact: false },
       ),
     ).not.toBeNull();
@@ -430,23 +430,26 @@ describe('ReportBugDialog', () => {
         fallback: { mailtoUrl: 'mailto:support@inkeep.com?subject=OpenKnowledge%20bug' },
       },
     ],
-  ])('%s resolves outside the dialog — no terminal phase, no reopen, no draft', async (_, result) => {
-    const log = installBridge({ send: () => Promise.resolve(result) });
-    const { openChangeCalls } = await renderDialog({}, { statefulOpen: true });
-    await createReport('still my note');
+  ])(
+    '%s resolves outside the dialog — no terminal phase, no reopen, no draft',
+    async (_, result) => {
+      const log = installBridge({ send: () => Promise.resolve(result) });
+      const { openChangeCalls } = await renderDialog({}, { statefulOpen: true });
+      await createReport('still my note');
 
-    await userEvent.click(screen.getByRole('button', { name: 'Send report' }));
-    await vi.waitFor(() => {
-      expect(log.sendCalls).toHaveLength(1);
-    });
+      await userEvent.click(screen.getByRole('button', { name: 'Send report' }));
+      await vi.waitFor(() => {
+        expect(log.sendCalls).toHaveLength(1);
+      });
 
-    expect(openChangeCalls).toEqual([false]);
-    expect(screen.queryByRole('dialog')).toBeNull();
-    expect(screen.queryByRole('heading', { name: "Couldn't send the report" })).toBeNull();
-    expect(screen.queryByRole('heading', { name: 'Send your report by email' })).toBeNull();
-    expect(screen.queryByRole('heading', { name: 'Thanks for the report!' })).toBeNull();
-    expect(log.opened).toEqual([]);
-  });
+      expect(openChangeCalls).toEqual([false]);
+      expect(screen.queryByRole('dialog')).toBeNull();
+      expect(screen.queryByRole('heading', { name: "Couldn't send the report" })).toBeNull();
+      expect(screen.queryByRole('heading', { name: 'Send your report by email' })).toBeNull();
+      expect(screen.queryByRole('heading', { name: 'Thanks for the report!' })).toBeNull();
+      expect(log.opened).toEqual([]);
+    },
+  );
 
   test('Escape closes the dialog from review, and review keeps its close button', async () => {
     installBridge();
@@ -702,6 +705,30 @@ describe('ReportBugDialog', () => {
     await screen.findByRole('heading', { name: 'Review your report' });
 
     expect(log.createCalls[0]?.note).not.toContain('Crashed app version');
+  });
+
+  test('a crash invite that names when it crashed folds the time and its age in', async () => {
+    const log = installBridge();
+    await renderDialog({
+      crashInvite: { ...BOOT_INVITE, crashedAt: '2026-08-31T03:15:17.929Z' },
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Create report' }));
+    await screen.findByRole('heading', { name: 'Review your report' });
+
+    const note = log.createCalls[0]?.note ?? '';
+    expect(note).toContain('Crashed at: 2026-08-31T03:15:17.929Z (');
+    expect(note).toMatch(/Crashed at: .+ \(\d+[smhd] ago\)/);
+  });
+
+  test('a crash invite with no crash time composes the note without that line', async () => {
+    const log = installBridge();
+    await renderDialog({ crashInvite: BOOT_INVITE });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Create report' }));
+    await screen.findByRole('heading', { name: 'Review your report' });
+
+    expect(log.createCalls[0]?.note).not.toContain('Crashed at');
   });
 
   test('a plain compose with no dump on hand renders no crash-dump opt-in and sends no flag', async () => {

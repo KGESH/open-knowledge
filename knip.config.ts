@@ -14,6 +14,7 @@ export default {
     '@lingui/babel-plugin-lingui-macro',
     '@lingui/format-po',
     'micromark',
+    '@typescript/native',
   ],
   ignoreBinaries: [
     'printf',
@@ -57,7 +58,7 @@ export default {
     'packages/app/src/editor/http-client.ts': ['types'],
     '.{agents,codex}/skills/**': ['files'],
     'lint-plugins/no-comments/__fixtures__/**': ['files'],
-    'biome-plugins/__fixtures__/**': ['files'],
+    'lint-plugins/ok-rules/__fixtures__/**': ['files'],
     'scripts/compute-next-beta.mjs': ['files'],
     'scripts/build-slack-release-payload.mjs': ['files'],
     'scripts/assert-smoke-not-vacuous.mjs': ['files'],
@@ -137,7 +138,14 @@ export default {
       ],
     },
     'packages/desktop': {
-      entry: ['src/**/*.test.ts', 'scripts/*.mjs', 'tests/**/*.test.ts', 'tests/**/*.test.mjs'],
+      entry: [
+        'src/utility/server-entry.ts',
+        'src/utility/pty-host.ts',
+        'src/**/*.test.ts',
+        'scripts/*.mjs',
+        'tests/**/*.test.ts',
+        'tests/**/*.test.mjs',
+      ],
       ignoreDependencies: ['@inkeep/open-knowledge-native-config', 'culori'],
       project: 'src/**',
     },

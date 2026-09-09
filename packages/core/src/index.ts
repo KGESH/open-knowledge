@@ -1,4 +1,5 @@
 export { VFileMessage } from 'vfile-message';
+export * from './agent-registry/index.ts';
 // Bridge — observer/CRDT-bridge shared utilities (precedent #14)
 export {
   addsBlankLines,
@@ -105,6 +106,7 @@ export {
   toBridgeInvariantLog,
   tryLineLevelCombine,
 } from './bridge/index.ts';
+
 export {
   clampToCodeUnits,
   isBlankNoteContent,
@@ -413,7 +415,7 @@ export {
   HOSTS_WITH_USER_SKILL_DIR,
   HUB_READER_EDITORS,
   PROJECT_SKILL_EDITOR_IDS,
-  PROJECT_SKILL_PROJECTION_IGNORE_PATHS,
+  PROJECT_SKILL_PROJECTION_PATHS,
   RESERVED_PROJECT_SKILL_NAME,
   receivesProjectIntegrationWrite,
   skillRootActivationPath,
@@ -504,7 +506,6 @@ export {
   isSkillRefCandidate,
   OPENKNOWLEDGE_SKILLS_REPO,
   PACK_SKILL_PREFIX,
-  projectSkillDecisionKey,
   RENAMED_PACK_SKILLS,
   rewriteSkillRefs,
   SKILL_REF_RE,
@@ -873,6 +874,8 @@ export {
   isFrontmatterScoped,
   isMarkdownlintJsonConfig,
   isOkfRuleEnabled,
+  isReLintFailedWarning,
+  isReLintFailureReason,
   isSupportedSchemaDialect,
   isToolManagedSchemaPath,
   LINKS_VALIDATION_SETTINGS,
@@ -926,6 +929,11 @@ export {
   okfAdvertisedSchemaMappings,
   okfSchemaPathFor,
   type PersistedLinterConfig,
+  RE_LINT_FAILED_WARNING_PREFIX,
+  RE_LINT_FAILURE_REASONS,
+  type ReLintFailure,
+  type ReLintFailureReason,
+  ReLintFailureSchema,
   type ResolvedFrontmatterSchemaEntry,
   RULE_DISPLAY_CATEGORIES,
   type RuleCatalogEntry,
@@ -1059,6 +1067,16 @@ export {
   type AgentEffectEntryWire,
   AgentEffectsDocSchema,
   type AgentEffectsDocWire,
+  AgentIntegrationsAppliedStepSchema,
+  type AgentIntegrationsApplyRequest,
+  AgentIntegrationsApplyRequestSchema,
+  type AgentIntegrationsApplySuccess,
+  AgentIntegrationsApplySuccessSchema,
+  AgentIntegrationsIntentSchema,
+  type AgentIntegrationsIntentWire,
+  AgentIntegrationsPlanConflictSchema,
+  AgentIntegrationsProbeSchema,
+  AgentIntegrationsSnapshotSchema,
   type AgentPatchRequest,
   AgentPatchRequestSchema,
   type AgentPatchSuccess,
@@ -1089,6 +1107,7 @@ export {
   type ApiConfigSuccess,
   ApiConfigSuccessSchema,
   assertNeverProblemType,
+  assertNeverWriteWarning,
   type BacklinkCountsSuccess,
   BacklinkCountsSuccessSchema,
   type BacklinkEntry,
@@ -1225,6 +1244,7 @@ export {
   isBranchNotFoundGitError,
   isLoginFixableGitAuthError,
   isValidBranchName,
+  isWriteWarningKind,
   type LifecycleStatus,
   LifecycleStatusSchema,
   type LinkGraphDocNode,
@@ -1633,7 +1653,9 @@ export {
   type WatcherDecisionEntryWire,
   type WorkspaceSuccess,
   WorkspaceSuccessSchema,
+  WRITE_WARNING_KINDS,
   type WriteWarning,
+  type WriteWarningKind,
   WriteWarningSchema,
 } from './schemas/api/index.ts';
 export {
@@ -1948,6 +1970,7 @@ export {
 export { type BasenameIndex, createBasenameIndex } from './utils/path-resolve.ts';
 export { type PdfAnchorParts, parsePdfAnchor } from './utils/pdf-anchor.ts';
 export { randomUUID } from './utils/random-uuid.ts';
+export { formatRelativeAge, RELATIVE_TIME_UNKNOWN } from './utils/relative-time.ts';
 export {
   decodeHrefPath,
   encodeHrefPath,
